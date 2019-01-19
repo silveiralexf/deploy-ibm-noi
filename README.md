@@ -471,7 +471,7 @@ After loading the installation package to your catalog, check the chart instruct
 - [ibm-netcool-prod-1.500.29](ibm-netcool-prod-1.500.29/README.md)
 
 
-#### 3.1. Creating a Kubernetes secret for the Netcool/OMNIbus password
+#### (Optional) Creating a Kubernetes secret for the Netcool/OMNIbus password
 
 More details on the following link:
 
@@ -499,7 +499,7 @@ If your deployment was completed successfully, you should be able to access the 
 You might have to add the IP addresses to your local `/etc/hosts` in order to properly access the consoles:
 
 
-<img src="ibm-netcool-prod-1.500.29/image_webgui.png" width="95%" height="500"></td>
+<img src="ibm-netcool-prod-1.500.29/image_webgui.png" width="95%" height="350"></td>
 
 ### Known Problems
 
