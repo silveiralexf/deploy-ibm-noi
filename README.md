@@ -326,7 +326,7 @@ And perform the steps described below:
 ##### 1.1. Perform login on ICP Master Node:
 
 ```bash
-root@icp-master1:~# cloudctl login -a https://37.58.94.24:8443 --skip-ssl-validation 
+root@icp-master1:~# cloudctl login -a https://169.46.198.XXX:8443 --skip-ssl-validation 
 
 Username> admin
 
@@ -465,7 +465,11 @@ root@icp-master1:~#
 
 #### 3. Deploying NOI from the ICP Catalog
 
-**----> PENDING TO ADD MORE INFORMATION <----**
+
+After loading the installation package to your catalog, check the chart instructions for the complete step-by-step instructions for deployment:
+
+- [ibm-netcool-prod-1.500.29](ibm-netcool-prod-1.500.29/README.md)
+
 
 #### 3.1. Creating a Kubernetes secret for the Netcool/OMNIbus password
 
@@ -476,8 +480,26 @@ More details on the following link:
 
 #### 4. Confirming if NOI was Successfully Deployed
 
-**----> PENDING TO ADD MORE INFORMATION <----**
 
+If your deployment was completed successfully, you should be able to access the URL's with its respective credentials:
+
+
+**WebGUI**: https://netcool.icp-noi.mycluster.icp/ibm/console
+**credentials**: icpadmin/XXXXXXX
+
+**WAS Console**: https://was.icp-noi.mycluster.icp/ibm/console
+**credentials**: admin/XXXXXXX
+
+**Log Analysis**: https://scala.icp-noi.mycluster.icp/Unity
+**credentials**: unityadmin/XXXXXXX
+
+**Impact GUI**: https://impact.icp-noi.mycluster.icp/ibm/console
+**credentials**: impactadmin/XXXXXXX
+
+You might have to add the IP addresses to your local `/etc/hosts` in order to properly access the consoles:
+
+
+<img src="ibm-netcool-prod-1.500.29/image_webgui.png" width="95%" height="500"></td>
 
 ### Known Problems
 
