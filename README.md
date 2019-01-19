@@ -484,19 +484,12 @@ More details on the following link:
 If your deployment was completed successfully, you should be able to access the URL's with its respective credentials:
 
 
-**WebGUI**: https://netcool.icp-noi.mycluster.icp/ibm/console
-**credentials**: icpadmin/XXXXXXX
+- **WebGUI**: https://netcool.icp-noi.mycluster.icp/ibm/console (**credentials**: icpadmin/XXXXXXX)
+- **WAS Console**: https://was.icp-noi.mycluster.icp/ibm/console (**credentials**: admin/XXXXXXX)
+- **Log Analysis**: https://scala.icp-noi.mycluster.icp/Unity (**credentials**: unityadmin/XXXXXXX)
+- **Impact GUI**: https://impact.icp-noi.mycluster.icp/ibm/console (**credentials**: impactadmin/XXXXXXX)
 
-**WAS Console**: https://was.icp-noi.mycluster.icp/ibm/console
-**credentials**: admin/XXXXXXX
-
-**Log Analysis**: https://scala.icp-noi.mycluster.icp/Unity
-**credentials**: unityadmin/XXXXXXX
-
-**Impact GUI**: https://impact.icp-noi.mycluster.icp/ibm/console
-**credentials**: impactadmin/XXXXXXX
-
-You might have to add the IP addresses to your local `/etc/hosts` in order to properly access the consoles:
+You might have to add the IP addresses displayed at the installation summary output to your local `/etc/hosts` in order to properly access the consoles, as shown below:
 
 
 <img src="ibm-netcool-prod-1.500.29/image_webgui.png" width="95%" height="350"></td>
