@@ -51,10 +51,13 @@ Please take the recommendations below in consideration before deploying ICP:
 
 #### Hardware Requirements
 
-In order to safely deploy NOI, we suggest creating 1 master/boot, 1 proxy and 3 worker nodes, the number of workers is specially important, since we'll use **Heketi Chart for GlusterFS storage** -- which requires a minimum of 3 worker nodes to function. 
+Before starting, please get familiar with the ICP requirements for deploying NOI 1.5.0 on ICP Community Edition 3.1.1:
+
+- [Netcool Operations Insight 1.5.0 requirements for an Installation on IBM Cloud Private](https://www.ibm.com/support/knowledgecenter/en/SSTPTP_1.5.0/com.ibm.netcool_ops.doc/soc/integration/reference/soc_int_reqsforcloudinstallation.html)
+
+On this document we're suggesting the creation of 1 master/boot, 1 proxy and 3 worker nodes, the number of workers is specially important, since we'll use **Heketi Chart for GlusterFS storage** -- which requires a minimum of 3 worker nodes to function. 
 
 You can use the following definitions as a template for your master node, by updating the following at your local copy of the [create_sl_vms.yml](https://github.com/IBM/deploy-ibm-cloud-private/blob/master/playbooks/create_sl_vms.yml) playbook:
-
 
 Since NOI takes a reasonable amount of disk, its important that you increase the default settings provided in the playbook to meet the requirements. 
 
@@ -185,7 +188,6 @@ UI URL is https://169.46.198.XXX:8443 , default username/password is admin/admin
 See [Accessing IBM Cloud Private](https://github.com/IBM/deploy-ibm-cloud-private/blob/master/README.md#accessing-ibm-cloud-private) for more details on how access the tool, and make sure you [change the super administrator password](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/user_management/change_admin_passwd.html) as soon as possible.
 
 
-
 ### How to Deploy GlusterFS on your ICP Cluster?
 
 As noted at the documentation, GlusterFS is the recommended storage of choice when deploying NOI on ICP. We've used [IBM GlusterFS Storage Cluster chart](https://github.com/IBM/charts/tree/master/stable/ibm-glusterfs) for this implementation.
@@ -201,6 +203,7 @@ Though the complete list of requirements can be found at the [Heketi/GlusterFS C
 - **The storage devices that you use for GlusterFS must be raw disks. They must not be formatted, partitioned, or used for file system storage needs**. You must use the symbolic link (symlink) to identify the GlusterFS storage device (and if using VSI's or SUSE Linux, you must take some additional steps, as described at the next section).
 - The Heketi GlusterFS Chart must be deployed on `kube-system` namespace.
 - **Your cluster default storageClass must be GlusterFS in order for the NOI deployment to work**, set the parameter `storageClass.isDefault` to `true` during GlusterFS deployment.
+- You must also define before the deployment which **ReclaimPolicy** will be used on your default storageClass, For GlusterFS, the accepted values include `Retain`, and `Delete`. The volume reclaim policy `Retain` indicates that the volume will be preserved after the pods accessing it terminates.
 
 #### Preparing the Disks on SoftLayer VSI's
 
@@ -233,7 +236,7 @@ gluster:
       memory: "2Gi"
 ```
 
-#####> Confirm the chart Was successfully deployed
+#### Confirm if the chart was successfully deployed
 
 If all the steps were followed accordingly you should see a similar output after starting the deployment:
 
@@ -289,7 +292,7 @@ Installation of GlusterFS is successful.
 [fsilveir@fsilveir ibm-glusterfs]$ 
 ```
 
-Wait for all the related pods to be on `Running` state before considering the deployment as successfull, you can follow the instruction notes at the of the deployment to confirm status of each component individually. 
+Wait for all the related pods to be on `Running` state before considering the deployment as successfull, you can follow the instruction notes displayed at the end of the deployment output summary to confirm the status of each component individually. 
 
 In some cases, the `icp-gluster-glusterfs-heketi-deployment` pod takes too long to start, even after the daemonset pods are started, try delete the pod in this case and check if it them get's properly recreated, if it still fails troubleshoot it by checking the Deployment and ReplicaSet logs.
 
@@ -298,16 +301,101 @@ In some cases, the `icp-gluster-glusterfs-heketi-deployment` pod takes too long 
 
 For the install to work, we'll need to perform the following steps:
 
-- Copying and loading the installation package to the ICP catalog.
-- Create Persistent Volumes & Claims for NOI.
-- Deploy the NOI chart from ICP Catalog.
-- Confirm that everything is running as expected.
+1. Copying and loading the installation package to the ICP catalog.
+2. Create Persistent Volumes & Claims for NOI.
+3. Deploy the NOI chart from ICP Catalog.
+4. Confirm that everything is running as expected.
 
-#### Loading the Installation Package to ICP Catalog
+#### 1. Loading the Installation Package to the catalog
 
-PENDING STEPS
 
-#### Creating Persistent Volumes & Claims
+Download or ask your IBM vendor to download the **IBM Netcool Operations Insight 1.5 Operations Management for IBM Cloud Private English (part number CNX04EN)** from one of the following links:
+
+- [IBM Passport Advantage](http://www-01.ibm.com/software/howtobuy/passportadvantage/pao_customers.htm)
+- [IBM Software Sellers Workplace - Software Downloads](http://w3.ibm.com/software/xl/download/ticket.do)
+
+And perform the steps described below: 
+
+
+##### 1.1. Perform login on ICP Master Node:
+
+```bash
+root@icp-master1:~# cloudctl login -a https://37.58.94.24:8443 --skip-ssl-validation 
+
+Username> admin
+
+Password> 
+Authenticating...
+OK
+
+Targeted account mycluster Account (id-mycluster-account)
+
+Select a namespace:
+1. cert-manager
+2. default
+3. istio-system
+4. kube-public
+5. kube-system
+6. platform
+7. services
+Enter a number> 2
+Targeted namespace default
+
+Configuring kubectl ...
+Property "clusters.mycluster" unset.
+Property "users.mycluster-user" unset.
+Property "contexts.mycluster-context" unset.
+Cluster "mycluster" set.
+User "mycluster-user" set.
+Context "mycluster-context" created.
+Switched to context "mycluster-context".
+OK
+
+Configuring helm: /root/.helm
+OK
+
+```
+
+##### 1.2. Perform Docker login on the ICP Master Node
+
+In order to upload the installation package to the Docker repository, first you must perform Docker login, as shown below:
+
+```bash
+root@icp-master1:~# docker login mycluster.icp:8500
+Authenticating with existing credentials...
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+root@icp-master1:~#
+```
+
+For more instructions on how to configure the docker CLI before the login, check the following link:
+
+- [Configuring Docker CLI](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_2.1.0/manage_images/configuring_docker_cli.html)
+
+##### 1.3. Load the installation package (archive) to the Docker repository
+
+Be sure you have set the context to `default` namespace with the following command before loading the installation package with the following command:
+
+```bash
+root@icp-master1:~# kubectl config set-context $(kubectl config current-context) --namespace default
+Context "mycluster-context" modified.
+```
+
+Them load the installation package to the catalog as shown below:
+
+```bash
+root@icp-master1:~# cloudctl catalog load-archive --archive NOI_V1.5_OM_FOR_ICP.tar.gz
+```
+
+For more details, check the following page, ***but please be aware that the documentation is not updated, and is still informing to use `bx pr` utility instead of the new `cloudctl` utility***:
+
+- [Loading the archive into IBM Cloud Private](https://www.ibm.com/support/knowledgecenter/en/SSTPTP_1.5.0/com.ibm.netcool_ops.doc/soc/integration/task/int_loading-into-icp.html)
+
+
+#### 2. Creating Persistent Volumes & Claims
 
 Before you can start the install, you must create the Persistent Volume and Volume Claims required by NOI deployment to be able to start. To do so copy the [noi-gluster-pv.yaml](./volume-claims/noi-gluster-pv.yaml) file to your master node and execute the following command:
 
@@ -369,21 +457,48 @@ root@icp-master1:~#
 ```
 
 
-#### Deploying NOI from the ICP Catalog
+#### 3. Deploying NOI from the ICP Catalog
 
-PENDING STEPS
+**----> PENDING TO ADD MORE INFORMATION <----**
+
+#### 3.1. Creating a Kubernetes secret for the Netcool/OMNIbus password
+
+More details on the following link:
+
+- https://www.ibm.com/support/knowledgecenter/en/SSTPTP_1.5.0/com.ibm.netcool_ops.doc/soc/integration/task/int_installingbaseprivatecloud-gui.html
 
 
-#### Confirming if NOI was Successfully Deployed
+#### 4. Confirming if NOI was Successfully Deployed
 
-PENDING STEPS
+**----> PENDING TO ADD MORE INFORMATION <----**
 
 
 ### Known Problems
 
-Here are some of the known issues we had during the implementation:
 
-- If the NOI installation images are not loaded to the `default`  namespace, NOI won't be able to pull the individual images during the install process.
-- If GlusterFS is not your default DefaultStorage class on ICP, you won't be able to deploy NOI to your ICP cluster later on.
-- Chart/Pod security settings had to be manually created, as described at the following [security summary](https://github.com/IBM/cloud-pak/blob/master/reference/security-summary.md).
-- Gluster volumes may loose sync if the Master/Worker nodes suddently halt. Extrene care is required to handle GlusterFS outages without corrupting data. More details and recommendations can be found at the [following link]().
+#### Internal Service Error after loading the NOI installation package into the catalog.
+
+Depending on your securty settings, you might receive the following **Internal service error** when trying to load the installation package:
+
+```
+Internal service error : rpc error: code = Unknown desc = release noi failed: Internal error occurred: admission webhook "trust.hooks.securityenforcement.admission.cloud.ibm.com" denied the request: Deny "mycluster.icp:8500/noi/ibmcom/netcool-db2ese-ee:1.4.1-16", trust is not supported for images from this registry: mycluster.icp:8500
+```
+To solve the problem, execute the following with the administrator user:
+
+```
+kubectl delete --ignore-not-found=true MutatingWebhookConfiguration image-admission-config
+kubectl delete --ignore-not-found=true ValidatingWebhookConfiguration image-admission-config
+```
+
+Check the link below for more information:
+
+- [Removing Container Image Security Enforcement](https://console.bluemix.net/docs/services/Registry/registry_security_enforce.html#remove)
+
+
+#### "Failed to pull image" and "Error: ImagePullBackOff" when trying to install NOI
+
+If the NOI installation images were not loaded to the `default` namespace, NOI won't be able to pull the individual images during the install process.
+
+The best way to fix the issue is to remove from package from the catalog and load it again, however more information on possible ways to fix the issue can be found at the following (though the document below is related to a different tool, the same logic can be used to fix the problem when using NOI):
+
+- [Install does not complete successfully on IBM Cloud Private (ICP)](https://www-01.ibm.com/support/docview.wss?uid=ibm10737075)
