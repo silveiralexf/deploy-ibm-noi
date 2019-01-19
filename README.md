@@ -221,7 +221,7 @@ In some environments, such as IBM Cloud VSI or SUSE Linux Enterprise Server (SLE
 
 We've experienced some performance issues when using IBM's recommended requirements, therefore we've had better results when using the following requirements for the Gluster configuration parameters:
 
-#####> Gluster Configuration Parameters
+##### > Gluster Configuration Parameters
 
 ```yaml
 ###############################################################################
