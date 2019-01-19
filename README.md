@@ -8,7 +8,7 @@ The following will be covered by this guide:
 
 - What is ICP / NOI?
 - Installing ICP CE (v3.1.1) on SoftLayer VM's with Ansible
-- Configuring IBM GlusterFS on ICP 3.1.1
+- Deploying Heketi GlusterFS on ICP 3.1.1
 - Installing NOI
 
 ### What is IBM Cloud Private?
@@ -47,7 +47,7 @@ The deployment repository will provide you basically with 2 Ansible playbooks:
 - [create_sl_vms.yml](https://github.com/IBM/deploy-ibm-cloud-private/blob/master/playbooks/create_sl_vms.yml): To create the VM's on SoftLayer according to the specifications defined on `clusters/config.yaml` file.
 - [prepare_sl_vms.yml](https://github.com/IBM/deploy-ibm-cloud-private/blob/master/playbooks/prepare_sl_vms.yml): Prepare and install required packages for ICP
 
-Please take the recommendations below in consideration before deploying ICP:
+Please take the requirements listed below in consideration before starting ICP deployment:
 
 #### Hardware Requirements
 
@@ -55,7 +55,13 @@ Before starting, please get familiar with the ICP requirements for deploying NOI
 
 - [Netcool Operations Insight 1.5.0 requirements for an Installation on IBM Cloud Private](https://www.ibm.com/support/knowledgecenter/en/SSTPTP_1.5.0/com.ibm.netcool_ops.doc/soc/integration/reference/soc_int_reqsforcloudinstallation.html)
 
-On this document we're suggesting the creation of 1 master/boot, 1 proxy and 3 worker nodes, the number of workers is specially important, since we'll use **Heketi Chart for GlusterFS storage** -- which requires a minimum of 3 worker nodes to function. 
+On this document we're suggesting the following architecture: 
+
+- 1 Master/Management/Boot Node
+- 1 Proxy Node
+- 3 Worker Nodes 
+
+_Note: The number of workers is specially important, since we'll use Heketi Chart for GlusterFS storage -- which requires a minimum of 3 worker nodes to function._
 
 You can use the following definitions as a template for your master node, by updating the following at your local copy of the [create_sl_vms.yml](https://github.com/IBM/deploy-ibm-cloud-private/blob/master/playbooks/create_sl_vms.yml) playbook:
 
@@ -226,7 +232,7 @@ gluster:
     repository: "ibmcom/gluster"
     tag: "v4.0.2"
     pullPolicy: "IfNotPresent"
-  installType: "Fresh"yese
+  installType: "Fresh"
   resources:
     requests:
       cpu: "1000m"
